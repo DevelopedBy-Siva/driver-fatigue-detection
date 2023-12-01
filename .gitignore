@@ -1,4 +1,4 @@
 .idea
 venv
 yolov5s.pt
-data
+data/images/*jpg
