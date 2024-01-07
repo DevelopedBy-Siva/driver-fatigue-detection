@@ -1,2 +1,6 @@
-# yolo-drowsiness-detection
-Yolo-based Drowsiness Detection using PyTorch and Python for real-time monitoring
+# drowsiness-detection
+
+There are two model implemented,
+
+- using CNN
+- using Yolov5
