@@ -1,6 +1,6 @@
-# drowsiness-detection
+# driver-fatigue-detection
 
-There are two model implemented,
+There are two models implemented,
 
 - using CNN
 - using Yolov5
