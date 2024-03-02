@@ -1,6 +1,0 @@
-.idea
-venv
-yolov5s.pt
-data/images/*jpg
-data/labels.cache
-.DS_Store
