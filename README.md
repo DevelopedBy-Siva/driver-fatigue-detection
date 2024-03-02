@@ -1,6 +1,9 @@
 # driver-fatigue-detection
 
-There are two models implemented,
+An edge-server to predict drowsiness
 
-- using CNN
-- using Yolov5
+[Click here to view the notebook](./notebook/DrowsinessDetection.ipynb)
+
+## Steps:
+
+1. pip install -r requirements.txt
