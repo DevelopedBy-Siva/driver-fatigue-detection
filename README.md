@@ -8,6 +8,7 @@ Driver Drowsiness Detection is an Android app that monitors the driver in real-t
 - [Android Application](https://github.com/DevelopedBy-Siva/driver-fatigue-detection/tree/android-app)
   
 - [Edge Server](https://github.com/DevelopedBy-Siva/driver-fatigue-detection/tree/local-server)
+  - Contains the CNN model for drowsiness detection.
   
 - [Cloud Server](https://github.com/DevelopedBy-Siva/driver-fatigue-detection/tree/cloud-server)
   
