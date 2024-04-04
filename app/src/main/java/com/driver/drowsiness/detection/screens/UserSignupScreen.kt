@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +35,8 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.R
 import com.driver.drowsiness.detection.components.InputField
+import com.driver.drowsiness.detection.ui.theme.DarkColor
+import com.driver.drowsiness.detection.ui.theme.poppinsFontFamily
 
 @Composable
 fun UserSignupScreen(navController: NavController) {
@@ -61,25 +65,24 @@ fun UserSignupScreen(navController: NavController) {
         modifier = Modifier.fillMaxSize(),
     ) {
         Spacer(modifier = Modifier.height(25.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.goback),
+        Icon(painter = painterResource(id = R.drawable.goback),
             contentDescription = "",
-            modifier = Modifier
+            tint = DarkColor,
+                    modifier = Modifier
                 .size(40.dp)
                 .padding(10.dp)
                 .clickable {
                     navController.navigate(Routes.USER_SIGNIN_SCREEN)
-                }
+                })
+        Text(
+            text = "Almost There !", style = TextStyle(
+                fontSize = 32.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, color = DarkColor
+            ), modifier = Modifier.padding(start = 10.dp, top = 50.dp)
         )
         Text(
-            text = "Almost There !",
-            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Medium),
-            modifier = Modifier.padding(start = 10.dp, top = 50.dp)
-        )
-        Text(
-            text = "We are excited to see you here...!",
-            style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal),
-            modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 20.dp)
+            text = "We are excited to see you here...!", style = TextStyle(
+                fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Normal, color = DarkColor
+            ), modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 20.dp)
         )
 
         InputField(
@@ -97,9 +100,11 @@ fun UserSignupScreen(navController: NavController) {
         )
         if (nameError) {
             Text(
-                text = "Name must be at least 4 characters",
-                style = TextStyle(color = Color.Red),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
+                text = "Name must be at least 4 characters", style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                ), modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
             )
         }
 
@@ -119,14 +124,17 @@ fun UserSignupScreen(navController: NavController) {
         )
         if (emailError) {
             Text(
-                text = "Invalid Email",
-                style = TextStyle(color = Color.Red),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
+                text = "Invalid Email", style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                ), modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
             )
         }
 
         // Password input field with validation error
         InputField(
+            hide = true,
             value = password,
             onValueChange = {
                 password = it
@@ -142,14 +150,17 @@ fun UserSignupScreen(navController: NavController) {
 
         if (passwordError) {
             Text(
-                text = "Password must be at least 8 characters",
-                style = TextStyle(color = Color.Red),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                text = "Password must be at least 8 characters", style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                ), modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
 
         // Confirm Password input field with validation error
         InputField(
+            hide = true,
             value = confirmPassword,
             onValueChange = {
                 confirmPassword = it
@@ -165,11 +176,15 @@ fun UserSignupScreen(navController: NavController) {
 
         if (confirmPasswordError) {
             Text(
-                text = "Passwords do not match",
-                style = TextStyle(color = Color.Red),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                text = "Passwords do not match", style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                ), modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
+
+        Spacer(modifier = Modifier.height(30.dp))
 
         Button(
             onClick = {
@@ -182,11 +197,14 @@ fun UserSignupScreen(navController: NavController) {
                     confirmPasswordError = password != confirmPassword
                 }
             },
+            colors = ButtonDefaults.buttonColors(containerColor = DarkColor),
+            shape = RoundedCornerShape(10.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .height(80.dp)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            Text(text = "Sign Up")
+            Text(text = "Sign Up", fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
         }
     }
 }

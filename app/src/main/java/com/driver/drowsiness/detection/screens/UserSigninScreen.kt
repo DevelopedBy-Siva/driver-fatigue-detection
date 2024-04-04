@@ -10,10 +10,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -26,14 +28,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.R
 import com.driver.drowsiness.detection.components.InputField
+import com.driver.drowsiness.detection.ui.theme.DarkColor
+import com.driver.drowsiness.detection.ui.theme.poppinsFontFamily
 
 @Composable
 fun UserSigninScreen(navController: NavController) {
@@ -58,19 +62,20 @@ fun UserSigninScreen(navController: NavController) {
         Icon(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "",
-            modifier = Modifier
+            tint = DarkColor,
+                    modifier = Modifier
                 .size(100.dp)
                 .padding(10.dp)
         )
         Text(
-            text = "Welcome Back !",
-            style = TextStyle(fontSize = 32.sp, fontWeight = FontWeight.Medium),
-            modifier = Modifier.padding(start = 10.dp, top = 50.dp)
+            text = "Welcome Back !", style = TextStyle(
+                fontSize = 32.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, color = DarkColor
+            ), modifier = Modifier.padding(start = 10.dp, top = 50.dp)
         )
         Text(
-            text = "Sign In to Continue",
-            style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Normal),
-            modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 20.dp)
+            text = "Sign In to Continue", style = TextStyle(
+                fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Normal, color = DarkColor
+            ), modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 20.dp)
         )
 
         InputField(
@@ -88,14 +93,17 @@ fun UserSigninScreen(navController: NavController) {
         )
         if (emailError) {
             Text(
-                text = "Invalid Email",
-                style = TextStyle(color = Color.Red),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
+                text = "Invalid Email", style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                ), modifier = Modifier.padding(horizontal = 16.dp, vertical = 1.dp)
             )
         }
 
         // Password input field with validation error
         InputField(
+            hide = true,
             value = password,
             onValueChange = {
                 password = it
@@ -111,9 +119,11 @@ fun UserSigninScreen(navController: NavController) {
 
         if (passwordError) {
             Text(
-                text = "Password must be at least 8 characters",
-                style = TextStyle(color = Color.Red),
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
+                text = "Password must be at least 8 characters", style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal
+                ), modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
 
@@ -124,18 +134,16 @@ fun UserSigninScreen(navController: NavController) {
                 .padding(bottom = 30.dp, top = 30.dp, end = 10.dp)
         ) {
             Text(
-                text = "Don’t have an account? ",
-                style = TextStyle(fontSize = 16.sp)
+                text = "Don’t have an account? ", style = TextStyle(
+                    fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Normal, color = DarkColor
+                )
             )
 
-            Text(
-                text = "Sign Up",
-                style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Bold),
-                modifier = Modifier
-                    .clickable {
-                        navController.navigate(Routes.USER_SIGNUP_SCREEN)
-                    }
-            )
+            Text(text = "Sign Up", style = TextStyle(
+                fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, color = DarkColor
+            ), modifier = Modifier.clickable {
+                    navController.navigate(Routes.USER_SIGNUP_SCREEN)
+                })
         }
 
         Button(
@@ -147,11 +155,14 @@ fun UserSigninScreen(navController: NavController) {
                     passwordError = !validatePassword(password)
                 }
             },
+            colors = ButtonDefaults.buttonColors(containerColor = DarkColor),
+            shape = RoundedCornerShape(10.dp),
             modifier = Modifier
                 .fillMaxWidth()
+                .height(80.dp)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            Text(text = "Sign In")
+            Text(text = "Sign In", fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
         }
     }
 }
