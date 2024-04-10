@@ -3,12 +3,13 @@ package com.driver.drowsiness.detection.screens
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -62,13 +63,13 @@ fun UserSignupScreen(navController: NavController) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
         Spacer(modifier = Modifier.height(25.dp))
         Icon(painter = painterResource(id = R.drawable.goback),
             contentDescription = "",
             tint = DarkColor,
-                    modifier = Modifier
+            modifier = Modifier
                 .size(40.dp)
                 .padding(10.dp)
                 .clickable {
@@ -76,12 +77,18 @@ fun UserSignupScreen(navController: NavController) {
                 })
         Text(
             text = "Almost There !", style = TextStyle(
-                fontSize = 32.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, color = DarkColor
+                fontSize = 32.sp,
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                color = DarkColor
             ), modifier = Modifier.padding(start = 10.dp, top = 50.dp)
         )
         Text(
             text = "We are excited to see you here...!", style = TextStyle(
-                fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Normal, color = DarkColor
+                fontSize = 16.sp,
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.Normal,
+                color = DarkColor
             ), modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 20.dp)
         )
 
@@ -204,7 +211,12 @@ fun UserSignupScreen(navController: NavController) {
                 .height(80.dp)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            Text(text = "Sign Up", fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+            Text(
+                text = "SIGN UP",
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
         }
     }
 }

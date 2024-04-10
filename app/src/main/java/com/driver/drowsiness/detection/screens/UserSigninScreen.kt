@@ -5,12 +5,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
@@ -37,10 +38,11 @@ import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.R
 import com.driver.drowsiness.detection.components.InputField
 import com.driver.drowsiness.detection.ui.theme.DarkColor
+import com.driver.drowsiness.detection.ui.theme.SemiLightColor
 import com.driver.drowsiness.detection.ui.theme.poppinsFontFamily
 
 @Composable
-fun UserSigninScreen(navController: NavController) {
+fun UserSignInScreen(navController: NavController) {
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -56,25 +58,31 @@ fun UserSigninScreen(navController: NavController) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
         Spacer(modifier = Modifier.height(25.dp))
         Icon(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = "",
             tint = DarkColor,
-                    modifier = Modifier
+            modifier = Modifier
                 .size(100.dp)
                 .padding(10.dp)
         )
         Text(
             text = "Welcome Back !", style = TextStyle(
-                fontSize = 32.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, color = DarkColor
+                fontSize = 32.sp,
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                color = DarkColor
             ), modifier = Modifier.padding(start = 10.dp, top = 50.dp)
         )
         Text(
             text = "Sign In to Continue", style = TextStyle(
-                fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Normal, color = DarkColor
+                fontSize = 16.sp,
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.Normal,
+                color = DarkColor
             ), modifier = Modifier.padding(start = 10.dp, top = 10.dp, bottom = 20.dp)
         )
 
@@ -135,15 +143,21 @@ fun UserSigninScreen(navController: NavController) {
         ) {
             Text(
                 text = "Don’t have an account? ", style = TextStyle(
-                    fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Normal, color = DarkColor
+                    fontSize = 16.sp,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    color = SemiLightColor
                 )
             )
 
             Text(text = "Sign Up", style = TextStyle(
-                fontSize = 16.sp, fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, color = DarkColor
+                fontSize = 16.sp,
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.SemiBold,
+                color = DarkColor
             ), modifier = Modifier.clickable {
-                    navController.navigate(Routes.USER_SIGNUP_SCREEN)
-                })
+                navController.navigate(Routes.USER_SIGNUP_SCREEN)
+            })
         }
 
         Button(
@@ -162,13 +176,18 @@ fun UserSigninScreen(navController: NavController) {
                 .height(80.dp)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
-            Text(text = "Sign In", fontFamily = poppinsFontFamily, fontWeight = FontWeight.Medium, fontSize = 16.sp)
+            Text(
+                text = "SIGN IN",
+                fontFamily = poppinsFontFamily,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
         }
     }
 }
 
 @Preview
 @Composable
-fun UserSigninScreenPreview() {
-    UserSigninScreen(rememberNavController())
+fun UserSignInScreenPreview() {
+    UserSignInScreen(rememberNavController())
 }
