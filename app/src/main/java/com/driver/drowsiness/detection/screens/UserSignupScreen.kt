@@ -196,6 +196,7 @@ fun UserSignupScreen(navController: NavController) {
         Button(
             onClick = {
                 if (validateEmail(email) && validatePassword(password) && validateName(name) && password == confirmPassword) {
+                   signUpUser(name, email, password)
                     navController.navigate(Routes.HOME_SCREEN)
                 } else {
                     emailError = !validateEmail(email)
@@ -225,4 +226,7 @@ fun UserSignupScreen(navController: NavController) {
 @Composable
 fun UserSignupScreenPreview() {
     UserSignupScreen(rememberNavController())
+}
+
+fun signUpUser(name: String, email: String, password: String) {
 }

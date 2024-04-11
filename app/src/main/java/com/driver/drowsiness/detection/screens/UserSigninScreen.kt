@@ -30,6 +30,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,9 +38,15 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.R
 import com.driver.drowsiness.detection.components.InputField
+import com.driver.drowsiness.detection.models.SignInCredentials
+import com.driver.drowsiness.detection.services.CloudServer
 import com.driver.drowsiness.detection.ui.theme.DarkColor
 import com.driver.drowsiness.detection.ui.theme.SemiLightColor
 import com.driver.drowsiness.detection.ui.theme.poppinsFontFamily
+import com.google.gson.JsonParser
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 @Composable
 fun UserSignInScreen(navController: NavController) {
@@ -48,6 +55,9 @@ fun UserSignInScreen(navController: NavController) {
     var password by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<Boolean>(false) }
     var passwordError by remember { mutableStateOf<Boolean>(false) }
+
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
     fun validateEmail(email: String): Boolean {
         return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
@@ -160,10 +170,37 @@ fun UserSignInScreen(navController: NavController) {
             })
         }
 
+        errorMessage?.let { message ->
+            Text(
+                text = message,
+                style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+            )
+        }
+
         Button(
             onClick = {
                 if (validateEmail(email) && validatePassword(password)) {
-                    navController.navigate(Routes.HOME_SCREEN)
+                    isLoading = true
+                    signInUser(email, password,
+                        onSuccess = {
+                            navController.navigate(Routes.HOME_SCREEN)
+                            isLoading = false
+                        },
+                        onError = { msg ->
+                            msg?.let {
+                                errorMessage = it
+                            }
+                            isLoading = false
+                        }
+                    )
                 } else {
                     emailError = !validateEmail(email)
                     passwordError = !validatePassword(password)
@@ -176,8 +213,13 @@ fun UserSignInScreen(navController: NavController) {
                 .height(80.dp)
                 .padding(horizontal = 16.dp, vertical = 16.dp)
         ) {
+            val buttonText = if (isLoading) {
+                "Please wait..."
+            } else {
+                "SIGN IN"
+            }
             Text(
-                text = "SIGN IN",
+                text = buttonText,
                 fontFamily = poppinsFontFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp
@@ -190,4 +232,32 @@ fun UserSignInScreen(navController: NavController) {
 @Composable
 fun UserSignInScreenPreview() {
     UserSignInScreen(rememberNavController())
+}
+
+
+fun signInUser(email: String, password: String, onSuccess: () -> Unit, onError: (String?) -> Unit) {
+    val signInCredentials = SignInCredentials(email = email, password = password)
+    val call = CloudServer.apiService.signIn(signInCredentials)
+
+    call.enqueue(object : Callback<String> {
+        override fun onResponse(call: Call<String>, response: Response<String>) {
+            if (response.isSuccessful) {
+                onSuccess()
+            } else {
+                val errorMessage = try {
+                    val errorJson =
+                        JsonParser.parseString(response.errorBody()?.string()).asJsonObject
+                    errorJson.get("error").asString
+                } catch (e: Exception) {
+                    "Unknown Server Error. Try again later."
+                }
+                onError(errorMessage)
+            }
+        }
+
+        override fun onFailure(call: Call<String>, t: Throwable) {
+            t.printStackTrace()
+            onError("Unknown Server Error. Try again later.")
+        }
+    })
 }
