@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify, abort
 from pymongo import MongoClient
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app, origins="*")
 
 client = MongoClient('localhost', 27017)
 db = client['drowsiness-detection']
@@ -17,14 +19,14 @@ def signup():
     password = data.get('password')
 
     if not (name and email and password):
-        abort(400, 'Missing required fields.')
+        return jsonify({'error': 'Missing required fields.'}), 400
 
     if driver_collection.find_one({'email': email}):
-        abort(400, 'Email already exists! Try another one.')
+        return jsonify({'error': 'Email already exists! Try another one.'}), 400
 
     driver = {'name': name, 'email': email, 'password': password}
-    inserted_driver = driver_collection.insert_one(driver)
-    return jsonify(driver), 201
+    driver_collection.insert_one(driver)
+    return jsonify(str(driver)), 200
 
 
 @app.route('/signin', methods=['POST'])
@@ -35,14 +37,14 @@ def signin():
     password = data.get('password')
 
     if not (email and password):
-        abort(400, 'Missing required fields.')
+        return jsonify({'error': 'Missing required fields.'}), 400
 
     driver = driver_collection.find_one({'email': email, 'password': password})
     if driver:
-        return jsonify(driver)
+        return jsonify(driver), 200
     else:
-        abort(404, 'Invalid email or password.')
+        return jsonify({'error': 'Invalid email or password.'}), 404
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=8080)
