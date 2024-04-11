@@ -170,21 +170,6 @@ fun UserSignInScreen(navController: NavController) {
             })
         }
 
-        errorMessage?.let { message ->
-            Text(
-                text = message,
-                style = TextStyle(
-                    color = Color.Red,
-                    fontFamily = poppinsFontFamily,
-                    fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
-                ),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 4.dp)
-            )
-        }
-
         Button(
             onClick = {
                 if (validateEmail(email) && validatePassword(password)) {
@@ -223,6 +208,21 @@ fun UserSignInScreen(navController: NavController) {
                 fontFamily = poppinsFontFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp
+            )
+        }
+
+        errorMessage?.let { message ->
+            Text(
+                text = message,
+                style = TextStyle(
+                    color = Color.Red,
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Center
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 2.dp)
             )
         }
     }
