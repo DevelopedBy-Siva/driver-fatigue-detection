@@ -26,7 +26,7 @@ def signup():
 
     driver = {'name': name, 'email': email, 'password': password}
     driver_collection.insert_one(driver)
-    return jsonify(str(driver)), 200
+    return jsonify({'name': name, 'email': email, 'password': password}), 200
 
 
 @app.route('/signin', methods=['POST'])
@@ -41,7 +41,7 @@ def signin():
 
     driver = driver_collection.find_one({'email': email, 'password': password})
     if driver:
-        return jsonify(driver), 200
+        return jsonify({'name': driver["name"], 'email': email, 'password': password}), 200
     else:
         return jsonify({'error': 'Invalid email or password.'}), 404
 
