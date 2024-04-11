@@ -1,4 +1,4 @@
-package com.driver.drowsiness.detection.screens
+package com.driver.drowsiness.detection.constants
 
 object Routes {
 

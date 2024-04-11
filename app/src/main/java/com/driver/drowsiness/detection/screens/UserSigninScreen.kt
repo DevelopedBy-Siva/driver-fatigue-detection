@@ -26,6 +26,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -38,7 +39,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.R
 import com.driver.drowsiness.detection.components.InputField
+import com.driver.drowsiness.detection.constants.Routes
 import com.driver.drowsiness.detection.models.SignInCredentials
+import com.driver.drowsiness.detection.models.UserDetails
 import com.driver.drowsiness.detection.services.CloudServer
 import com.driver.drowsiness.detection.ui.theme.DarkColor
 import com.driver.drowsiness.detection.ui.theme.SemiLightColor
@@ -50,6 +53,8 @@ import retrofit2.Response
 
 @Composable
 fun UserSignInScreen(navController: NavController) {
+
+    val context = LocalContext.current
 
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -176,6 +181,8 @@ fun UserSignInScreen(navController: NavController) {
                     isLoading = true
                     signInUser(email, password,
                         onSuccess = {
+                            it ->
+                            storeCredentials(context, email, password, name = it.name)
                             navController.navigate(Routes.HOME_SCREEN)
                             isLoading = false
                         },
@@ -235,14 +242,17 @@ fun UserSignInScreenPreview() {
 }
 
 
-fun signInUser(email: String, password: String, onSuccess: () -> Unit, onError: (String?) -> Unit) {
+fun signInUser(email: String, password: String, onSuccess: (UserDetails) -> Unit, onError: (String?) -> Unit) {
     val signInCredentials = SignInCredentials(email = email, password = password)
     val call = CloudServer.apiService.signIn(signInCredentials)
 
-    call.enqueue(object : Callback<String> {
-        override fun onResponse(call: Call<String>, response: Response<String>) {
+    call.enqueue(object : Callback<UserDetails> {
+        override fun onResponse(call: Call<UserDetails>, response: Response<UserDetails>) {
             if (response.isSuccessful) {
-                onSuccess()
+                val userDetails = response.body()
+                if (userDetails != null) {
+                    onSuccess(userDetails)
+                }
             } else {
                 val errorMessage = try {
                     val errorJson =
@@ -255,7 +265,7 @@ fun signInUser(email: String, password: String, onSuccess: () -> Unit, onError: 
             }
         }
 
-        override fun onFailure(call: Call<String>, t: Throwable) {
+        override fun onFailure(call: Call<UserDetails>, t: Throwable) {
             t.printStackTrace()
             onError("Unknown Server Error. Try again later.")
         }
