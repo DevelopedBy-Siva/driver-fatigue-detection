@@ -114,6 +114,8 @@ fun UserHomeScreen(navController: NavController) {
             }
         }
 
+        Spacer(modifier = Modifier.height(50.dp))
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -126,16 +128,14 @@ fun UserHomeScreen(navController: NavController) {
             Pulsating {
                 Box(
                     modifier = Modifier
-                        .padding(4.dp)
-                        .size(200.dp)
+                        .size(180.dp)
                         .aspectRatio(1f)
                         .background(Color(0xFFD8D8D8), shape = CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
                     Box(
                         modifier = Modifier
-                            .padding(4.dp)
-                            .size(120.dp)
+                            .size(100.dp)
                             .aspectRatio(1f)
                             .background(color = DarkColor, shape = CircleShape)
                             .clickable {
@@ -148,7 +148,7 @@ fun UserHomeScreen(navController: NavController) {
                             contentDescription = "",
                             tint = Color.White,
                             modifier = Modifier
-                                .size(70.dp)
+                                .size(60.dp)
                                 .padding(10.dp)
                         )
                     }
