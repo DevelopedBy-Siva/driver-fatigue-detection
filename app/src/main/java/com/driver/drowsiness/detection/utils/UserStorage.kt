@@ -16,6 +16,15 @@ fun storeCredentials(context: Context, email: String, password: String, name: St
         .apply()
 }
 
+fun removeCredentials(context: Context) {
+    val sharedPrefs = context.getSharedPreferences("credentials", Context.MODE_PRIVATE)
+    sharedPrefs.edit()
+        .remove(PREF_EMAIL)
+        .remove(PREF_PASSWORD)
+        .remove(PREF_NAME)
+        .apply()
+}
+
 fun retrieveCredentials(context: Context): UserDetails? {
     val sharedPrefs = context.getSharedPreferences("credentials", Context.MODE_PRIVATE)
     val email = sharedPrefs.getString(PREF_EMAIL, null)

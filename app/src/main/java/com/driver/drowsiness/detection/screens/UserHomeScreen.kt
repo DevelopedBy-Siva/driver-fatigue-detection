@@ -2,16 +2,22 @@ package com.driver.drowsiness.detection.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +39,7 @@ import com.driver.drowsiness.detection.constants.Routes
 import com.driver.drowsiness.detection.ui.theme.DarkColor
 import com.driver.drowsiness.detection.ui.theme.poppinsFontFamily
 import com.driver.drowsiness.detection.utils.capitalizeEachWord
+import com.driver.drowsiness.detection.utils.removeCredentials
 import com.driver.drowsiness.detection.utils.retrieveCredentials
 
 @Composable
@@ -44,7 +51,7 @@ fun UserHomeScreen(navController: NavController) {
     Column(
         modifier = Modifier.verticalScroll(rememberScrollState()),
     ) {
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(modifier = Modifier.height(30.dp))
 
         var name = ""
         if (userDetails != null) {
@@ -68,10 +75,50 @@ fun UserHomeScreen(navController: NavController) {
             ), modifier = Modifier.padding(start = 10.dp, top = 0.dp)
         )
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 20.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            Button(
+                onClick = {
+                    navController.navigate(Routes.USER_DATA_SCREEN)
+                },
+                modifier = Modifier.padding(end = 8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkColor),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Text(
+                    text = "My Data",
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
+                )
+            }
+            Button(
+                onClick = {
+                    removeCredentials(context)
+                    navController.navigate(Routes.USER_SIGNIN_SCREEN)
+                },
+                modifier = Modifier.padding(end = 8.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = DarkColor),
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Text(
+                    text = "Logout",
+                    fontFamily = poppinsFontFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
+                )
+            }
+        }
+
         Box(
             modifier = Modifier
+                .fillMaxWidth()
                 .padding(4.dp)
-                .size(400.dp)
+                .height(320.dp)
                 .aspectRatio(1f)
                 .background(Color.Transparent),
             contentAlignment = Alignment.Center
@@ -80,7 +127,7 @@ fun UserHomeScreen(navController: NavController) {
                 Box(
                     modifier = Modifier
                         .padding(4.dp)
-                        .size(220.dp)
+                        .size(200.dp)
                         .aspectRatio(1f)
                         .background(Color(0xFFD8D8D8), shape = CircleShape),
                     contentAlignment = Alignment.Center
@@ -88,7 +135,7 @@ fun UserHomeScreen(navController: NavController) {
                     Box(
                         modifier = Modifier
                             .padding(4.dp)
-                            .size(140.dp)
+                            .size(120.dp)
                             .aspectRatio(1f)
                             .background(color = DarkColor, shape = CircleShape)
                             .clickable {
@@ -101,7 +148,7 @@ fun UserHomeScreen(navController: NavController) {
                             contentDescription = "",
                             tint = Color.White,
                             modifier = Modifier
-                                .size(80.dp)
+                                .size(70.dp)
                                 .padding(10.dp)
                         )
                     }

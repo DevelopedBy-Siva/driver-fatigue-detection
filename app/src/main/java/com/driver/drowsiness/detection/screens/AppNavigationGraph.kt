@@ -35,5 +35,9 @@ fun AppNavigationGraph() {
         composable(Routes.MONITOR_SCREEN) {
             UserMonitorScreen()
         }
+
+        composable(Routes.USER_DATA_SCREEN) {
+            UserDataScreen()
+        }
     }
 }
