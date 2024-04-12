@@ -1,40 +1,13 @@
 package com.driver.drowsiness.detection.screens
 
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.constants.Routes
-import com.driver.drowsiness.detection.models.UserDetails
-
-private const val PREF_EMAIL = "email"
-private const val PREF_PASSWORD = "password"
-private const val PREF_NAME = "name"
-
-fun storeCredentials(context: Context, email: String, password: String, name: String) {
-    val sharedPrefs = context.getSharedPreferences("credentials", Context.MODE_PRIVATE)
-    sharedPrefs.edit()
-        .putString(PREF_EMAIL, email)
-        .putString(PREF_PASSWORD, password)
-        .putString(PREF_NAME, name)
-        .apply()
-}
-
-fun retrieveCredentials(context: Context): UserDetails? {
-    val sharedPrefs = context.getSharedPreferences("credentials", Context.MODE_PRIVATE)
-    val email = sharedPrefs.getString(PREF_EMAIL, null)
-    val password = sharedPrefs.getString(PREF_PASSWORD, null)
-    val name = sharedPrefs.getString(PREF_NAME, null)
-
-    return if (email != null && password != null && name != null) {
-        UserDetails(email = email, password = password, name = name)
-    } else {
-        null
-    }
-}
+import com.driver.drowsiness.detection.utils.retrieveCredentials
 
 @Composable
 fun AppNavigationGraph() {
@@ -56,7 +29,11 @@ fun AppNavigationGraph() {
         }
 
         composable(Routes.HOME_SCREEN) {
-            UserHomeScreen()
+            UserHomeScreen(navController)
+        }
+
+        composable(Routes.MONITOR_SCREEN) {
+            UserMonitorScreen()
         }
     }
 }

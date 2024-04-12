@@ -46,6 +46,7 @@ import com.driver.drowsiness.detection.services.CloudServer
 import com.driver.drowsiness.detection.ui.theme.DarkColor
 import com.driver.drowsiness.detection.ui.theme.SemiLightColor
 import com.driver.drowsiness.detection.ui.theme.poppinsFontFamily
+import com.driver.drowsiness.detection.utils.storeCredentials
 import com.google.gson.JsonParser
 import retrofit2.Call
 import retrofit2.Callback
@@ -180,8 +181,7 @@ fun UserSignInScreen(navController: NavController) {
                 if (validateEmail(email) && validatePassword(password)) {
                     isLoading = true
                     signInUser(email, password,
-                        onSuccess = {
-                            it ->
+                        onSuccess = { it ->
                             storeCredentials(context, email, password, name = it.name)
                             navController.navigate(Routes.HOME_SCREEN)
                             isLoading = false
@@ -242,7 +242,12 @@ fun UserSignInScreenPreview() {
 }
 
 
-fun signInUser(email: String, password: String, onSuccess: (UserDetails) -> Unit, onError: (String?) -> Unit) {
+fun signInUser(
+    email: String,
+    password: String,
+    onSuccess: (UserDetails) -> Unit,
+    onError: (String?) -> Unit
+) {
     val signInCredentials = SignInCredentials(email = email, password = password)
     val call = CloudServer.apiService.signIn(signInCredentials)
 
