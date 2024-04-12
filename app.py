@@ -21,6 +21,8 @@ def signup():
     if not (name and email and password):
         return jsonify({'error': 'Missing required fields.'}), 400
 
+    email = email.lower()
+
     if driver_collection.find_one({'email': email}):
         return jsonify({'error': 'Email already exists! Try another one.'}), 400
 
@@ -38,6 +40,8 @@ def signin():
 
     if not (email and password):
         return jsonify({'error': 'Missing required fields.'}), 400
+
+    email = email.lower()
 
     driver = driver_collection.find_one({'email': email, 'password': password})
     if driver:
