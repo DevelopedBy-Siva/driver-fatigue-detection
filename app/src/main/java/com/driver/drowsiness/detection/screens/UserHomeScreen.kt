@@ -60,7 +60,7 @@ fun UserHomeScreen(navController: NavController) {
                 fontFamily = poppinsFontFamily,
                 fontWeight = FontWeight.SemiBold,
                 color = DarkColor
-            ), modifier = Modifier.padding(start = 10.dp, top = 50.dp)
+            ), modifier = Modifier.padding(start = 15.dp, top = 50.dp)
         )
 
         Text(
@@ -69,13 +69,13 @@ fun UserHomeScreen(navController: NavController) {
                 fontFamily = poppinsFontFamily,
                 fontWeight = FontWeight.Bold,
                 color = DarkColor
-            ), modifier = Modifier.padding(start = 10.dp, top = 0.dp)
+            ), modifier = Modifier.padding(start = 15.dp, top = 0.dp)
         )
 
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 20.dp),
+                .padding(horizontal = 15.dp, vertical = 20.dp),
             horizontalArrangement = Arrangement.End
         ) {
             Button(
