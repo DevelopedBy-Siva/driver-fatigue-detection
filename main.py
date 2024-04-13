@@ -1,10 +1,12 @@
-import face_recognition
+import socket
+
 import cv2
+import face_recognition
+import numpy as np
 from tensorflow import keras
 
 
 def extract_eye_region_for_prediction(frame):
-
     # Detect facial landmarks
     facial_landmarks_list = face_recognition.face_landmarks(frame)
 
@@ -42,7 +44,7 @@ def extract_eye_region_for_prediction(frame):
             right_bound = round(
                 (bottom_bound - top_bound - x_range) / 2) + x_max
             left_bound = x_min - \
-                round((bottom_bound - top_bound - x_range) / 2)
+                         round((bottom_bound - top_bound - x_range) / 2)
 
         # Draw rectangle around the eye
         cv2.rectangle(
@@ -52,8 +54,8 @@ def extract_eye_region_for_prediction(frame):
 
     # Crop the image according to the determined coordinates
     cropped_eye_region = frame[
-        top_bound: bottom_bound + 1, left_bound: right_bound + 1
-    ]
+                         top_bound: bottom_bound + 1, left_bound: right_bound + 1
+                         ]
 
     # Resize the cropped image to 80x80 pixels
     resized_cropped_eye_region = cv2.resize(cropped_eye_region, (80, 80))
@@ -64,39 +66,50 @@ def extract_eye_region_for_prediction(frame):
     return image_for_prediction
 
 
-def initialize_webcam():
-    cap = cv2.VideoCapture(0)
-    w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+def receive_frame(sock):
+    # Receive frame size
+    frame_size = sock.recv(1024)
+    frame_size = int.from_bytes(frame_size, byteorder='big')
 
-    if not cap.isOpened():
-        raise IOError("Cannot open webcam")
+    # Receive frame data
+    frame_data = b""
+    while len(frame_data) < frame_size:
+        data = sock.recv(4096)
+        if not data:
+            break
+        frame_data += data
 
-    return cap, w, h
+    # Convert frame data to numpy array
+    frame_bytes = np.frombuffer(frame_data, dtype=np.uint8)
+    frame = cv2.imdecode(frame_bytes, cv2.IMREAD_COLOR)
+
+    return frame
+
+
+def initialize_server(host, port):
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind((host, port))
+    server_socket.listen(1)
+    print("Server listening...")
+    client_socket, client_address = server_socket.accept()
+    print(f"Connection from {client_address} established.")
+    return client_socket
 
 
 # Trained model
 trained_model = keras.models.load_model("drowsiness_model.keras")
 
-# Initialize webcam
-webcam, width, height = initialize_webcam()
+# Initialize server
+client_socket = initialize_server("localhost", 50000)
 
 # Initialize counters
 frame_count = 0
 blink_counter = 0
 
-# Run a continuous loop while the webcam is active
+# Run a continuous loop while monitoring
 while True:
-    # Capture frames from the webcam
-    ret, frame = webcam.read()
-
-    # Use only every other frame to manage speed and memory usage
-    if frame_count == 0:
-        frame_count += 1
-        pass
-    else:
-        frame_count = 0
-        continue
+    # Receive frame from client
+    frame = receive_frame(client_socket)
 
     # Process the frame to get the eye for prediction
     eye_image = extract_eye_region_for_prediction(frame)
@@ -111,22 +124,20 @@ while True:
     # Display status based on the prediction ("Open Eyes" or "Closed Eyes")
     if prediction < 0.5:
         blink_counter = 0
-
     else:
         blink_counter += 1
 
         # If the blink counter exceeds 2, show an alert for drowsiness
         if blink_counter > 2:
-            # Show alert message on Screen
+            # TODO: Send notification to client
             print("DROWSY")
-            k = cv2.waitKey(1)
             blink_counter = 1
             continue
 
-    # Exit the loop on pressing the 'Esc' key
-    if cv2.waitKey(1) & 0xFF == 27:
+    # Exit the loop on receiving stop signal from client
+    message = client_socket.recv(1024).decode()
+    if message == "STOP_MONITORING":
         break
 
-# Release the webcam and close all windows
-webcam.release()
-cv2.destroyAllWindows()
+# Close connection
+client_socket.close()
