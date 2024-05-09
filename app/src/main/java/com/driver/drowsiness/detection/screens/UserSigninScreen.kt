@@ -214,6 +214,7 @@ fun UserSignInScreen(navController: NavController) {
                 text = buttonText,
                 fontFamily = poppinsFontFamily,
                 fontWeight = FontWeight.Medium,
+                color = Color.White,
                 fontSize = 16.sp
             )
         }

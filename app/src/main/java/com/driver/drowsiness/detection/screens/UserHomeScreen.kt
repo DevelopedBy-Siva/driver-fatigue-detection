@@ -90,6 +90,7 @@ fun UserHomeScreen(navController: NavController) {
                     text = "My Data",
                     fontFamily = poppinsFontFamily,
                     fontWeight = FontWeight.Medium,
+                    color = Color.White,
                     fontSize = 16.sp
                 )
             }
@@ -106,6 +107,7 @@ fun UserHomeScreen(navController: NavController) {
                     text = "Logout",
                     fontFamily = poppinsFontFamily,
                     fontWeight = FontWeight.Medium,
+                    color = Color.White,
                     fontSize = 16.sp
                 )
             }

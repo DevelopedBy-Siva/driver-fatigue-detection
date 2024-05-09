@@ -5,19 +5,27 @@ import android.Manifest
 import android.content.pm.PackageManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIos
-import androidx.compose.material.icons.filled.VideoCameraFront
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +40,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,6 +53,7 @@ import com.driver.drowsiness.detection.components.PhotoBottomSheetContent
 import com.driver.drowsiness.detection.constants.Routes
 import com.driver.drowsiness.detection.models.MainViewModel
 import com.driver.drowsiness.detection.ui.theme.CameraXGuideTheme
+import com.driver.drowsiness.detection.ui.theme.DarkColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +61,7 @@ fun UserMonitorScreen(navController: NavController) {
 
     val context = LocalContext.current
     var permissionState by remember { mutableStateOf(false) }
+    var isRecording by remember { mutableStateOf(false) }
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -80,9 +91,9 @@ fun UserMonitorScreen(navController: NavController) {
             val scaffoldState = rememberBottomSheetScaffoldState()
             val controller = remember {
                 LifecycleCameraController(context).apply {
-                    setEnabledUseCases(
-                        CameraController.VIDEO_CAPTURE
-                    )
+                    setCameraSelector(CameraSelector.DEFAULT_FRONT_CAMERA)
+                    setEnabledUseCases(CameraController.VIDEO_CAPTURE)
+                    setZoomRatio(2f)
                 }
             }
             val viewModel = viewModel<MainViewModel>()
@@ -110,6 +121,15 @@ fun UserMonitorScreen(navController: NavController) {
                             .fillMaxSize()
                     )
 
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .width(350.dp)
+                            .height(450.dp)
+                            .border(2.dp, Color.White, shape = RectangleShape)
+                            .background(Color.Transparent)
+                    )
+
                     IconButton(
                         onClick = {
                             navController.navigate(Routes.HOME_SCREEN)
@@ -124,6 +144,7 @@ fun UserMonitorScreen(navController: NavController) {
                         )
                     }
 
+                    val recordingBtnColor = if (isRecording) Color.Red else DarkColor
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -131,15 +152,20 @@ fun UserMonitorScreen(navController: NavController) {
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceAround
                     ) {
-                        IconButton(
+                        Button(
+                            modifier = Modifier.size(70.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                             onClick = {
-
+                                isRecording = !isRecording
                             }
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.VideoCameraFront,
-                                contentDescription = "Record Video",
-                                tint = Color.White
+                            Box(
+                                modifier = Modifier
+                                    .size(24.dp)
+                                    .background(
+                                        color = recordingBtnColor,
+                                        shape = RoundedCornerShape(5.dp)
+                                    )
                             )
                         }
                     }
