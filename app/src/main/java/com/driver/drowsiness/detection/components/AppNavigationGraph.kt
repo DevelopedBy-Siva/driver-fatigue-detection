@@ -1,4 +1,4 @@
-package com.driver.drowsiness.detection.screens
+package com.driver.drowsiness.detection.components
 
 
 import androidx.compose.runtime.Composable
@@ -7,6 +7,11 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.driver.drowsiness.detection.constants.Routes
+import com.driver.drowsiness.detection.screens.UserDataScreen
+import com.driver.drowsiness.detection.screens.UserHomeScreen
+import com.driver.drowsiness.detection.screens.UserMonitorScreen
+import com.driver.drowsiness.detection.screens.UserSignInScreen
+import com.driver.drowsiness.detection.screens.UserSignupScreen
 import com.driver.drowsiness.detection.utils.retrieveCredentials
 
 @Composable
@@ -33,7 +38,7 @@ fun AppNavigationGraph() {
         }
 
         composable(Routes.MONITOR_SCREEN) {
-            UserMonitorScreen()
+            UserMonitorScreen(navController)
         }
 
         composable(Routes.USER_DATA_SCREEN) {
