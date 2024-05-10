@@ -3,6 +3,7 @@ package com.driver.drowsiness.detection.screens
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
@@ -52,8 +53,12 @@ import com.driver.drowsiness.detection.components.CameraPreview
 import com.driver.drowsiness.detection.components.PhotoBottomSheetContent
 import com.driver.drowsiness.detection.constants.Routes
 import com.driver.drowsiness.detection.models.MainViewModel
+import com.driver.drowsiness.detection.services.VideoWebSocketClient
 import com.driver.drowsiness.detection.ui.theme.CameraXGuideTheme
 import com.driver.drowsiness.detection.ui.theme.DarkColor
+import java.net.URI
+
+private val SOCKET_URI = URI("http://10.0.2.2:50000")
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -86,6 +91,8 @@ fun UserMonitorScreen(navController: NavController) {
     }
 
     if (permissionState) {
+
+        val webSocketClient = remember { VideoWebSocketClient(SOCKET_URI) }
 
         CameraXGuideTheme {
             val scaffoldState = rememberBottomSheetScaffoldState()
@@ -157,6 +164,18 @@ fun UserMonitorScreen(navController: NavController) {
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                             onClick = {
                                 isRecording = !isRecording
+                                try {
+                                    isRecording = !isRecording
+                                    if (isRecording) {
+                                        webSocketClient.connect()
+                                    } else {
+                                        webSocketClient.close()
+                                    }
+                                } catch (e: Exception) {
+                                    isRecording = false
+                                    webSocketClient.close()
+                                    Toast.makeText(context, "Failed to connect to edge server", Toast.LENGTH_SHORT).show()
+                                }
                             }
                         ) {
                             Box(

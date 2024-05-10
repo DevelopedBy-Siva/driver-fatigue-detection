@@ -89,4 +89,7 @@ dependencies {
     implementation("androidx.camera:camera-extensions:$cameraxVersion")
 
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
+
+    implementation("org.java-websocket:Java-WebSocket:1.5.1")
+
 }
