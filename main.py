@@ -1,9 +1,9 @@
 import socket
-
 import cv2
 import face_recognition
 import numpy as np
 from tensorflow import keras
+from threading import Thread
 
 
 def extract_eye_region_for_prediction(frame):
@@ -11,14 +11,14 @@ def extract_eye_region_for_prediction(frame):
     facial_landmarks_list = face_recognition.face_landmarks(frame)
 
     if not facial_landmarks_list:
-        return
+        return None
 
     # Get left and right eye coordinates
     try:
         left_eye_coordinates = facial_landmarks_list[0]["left_eye"]
         right_eye_coordinates = facial_landmarks_list[0]["right_eye"]
     except KeyError:
-        return
+        return None
 
     # Draw rectangles around each eye
     for eye_coordinates in [left_eye_coordinates, right_eye_coordinates]:
@@ -96,48 +96,39 @@ def initialize_server(host, port):
     return client_socket
 
 
-# Trained model
-trained_model = keras.models.load_model("drowsiness_model.keras")
+def monitor_driver(client_socket):
+    trained_model = keras.models.load_model("drowsiness_model.keras")
+    frame_count = 0
+    blink_counter = 0
 
-# Initialize server
-client_socket = initialize_server("localhost", 50000)
-
-# Initialize counters
-frame_count = 0
-blink_counter = 0
-
-# Run a continuous loop while monitoring
-while True:
-    # Receive frame from client
-    frame = receive_frame(client_socket)
-
-    # Process the frame to get the eye for prediction
-    eye_image = extract_eye_region_for_prediction(frame)
-    try:
-        eye_image = eye_image / 255.0
-    except:
-        continue
-
-    # Get prediction from the trained model
-    prediction = trained_model.predict(eye_image)
-
-    # Display status based on the prediction ("Open Eyes" or "Closed Eyes")
-    if prediction < 0.5:
-        blink_counter = 0
-    else:
-        blink_counter += 1
-
-        # If the blink counter exceeds 2, show an alert for drowsiness
-        if blink_counter > 2:
-            # TODO: Send notification to client
-            print("DROWSY")
-            blink_counter = 1
+    while True:
+        frame = receive_frame(client_socket)
+        eye_image = extract_eye_region_for_prediction(frame)
+        try:
+            eye_image = eye_image / 255.0
+        except:
             continue
 
-    # Exit the loop on receiving stop signal from client
-    message = client_socket.recv(1024).decode()
-    if message == "STOP_MONITORING":
-        break
+        prediction = trained_model.predict(eye_image)
 
-# Close connection
-client_socket.close()
+        if prediction < 0.5:
+            print("Awake...")
+            blink_counter = 0
+        else:
+            blink_counter += 1
+            if blink_counter > 2:
+                print("Wakeup...")
+                client_socket.send("DROWSY".encode())
+                blink_counter = 1
+                continue
+
+        message = client_socket.recv(1024).decode()
+        if message == "STOP_MONITORING":
+            break
+
+    client_socket.close()
+
+
+if __name__ == "__main__":
+    client_socket = initialize_server("localhost", 50000)
+    Thread(target=monitor_driver, args=(client_socket,)).start()
