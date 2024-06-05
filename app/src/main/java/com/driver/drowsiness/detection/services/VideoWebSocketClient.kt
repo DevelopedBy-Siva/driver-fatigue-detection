@@ -1,12 +1,13 @@
 package com.driver.drowsiness.detection.services
 
-import android.widget.Toast
+import android.graphics.Bitmap
+import android.graphics.Bitmap.CompressFormat
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
+import java.io.ByteArrayOutputStream
 import java.net.URI
 
 class VideoWebSocketClient(uri: URI) : WebSocketClient(uri) {
-    private var isClosed = false
 
     override fun onOpen(handshakedata: ServerHandshake?) {
         println("Socket Established...")
@@ -23,6 +24,16 @@ class VideoWebSocketClient(uri: URI) : WebSocketClient(uri) {
     override fun onError(ex: Exception?) {
         println("Socket Error...")
         close()
+    }
+
+    fun sendVideoFrame(frameData: ByteArray) {
+        if (isOpen) {
+            // Convert frameData to Base64 encoded string
+            val base64Data =
+                android.util.Base64.encodeToString(frameData, android.util.Base64.DEFAULT)
+            // Send the Base64 encoded string
+            send(base64Data)
+        }
     }
 
 }

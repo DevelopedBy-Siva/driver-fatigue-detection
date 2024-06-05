@@ -1,12 +1,13 @@
 package com.driver.drowsiness.detection.screens
 
-
 import android.Manifest
 import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageProxy
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.background
@@ -32,6 +33,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
@@ -67,6 +70,7 @@ fun UserMonitorScreen(navController: NavController) {
     val context = LocalContext.current
     var permissionState by remember { mutableStateOf(false) }
     var isRecording by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -105,6 +109,31 @@ fun UserMonitorScreen(navController: NavController) {
             }
             val viewModel = viewModel<MainViewModel>()
             val bitmaps by viewModel.bitmaps.collectAsState()
+
+            val imageAnalysis = remember {
+                ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                    .build()
+            }
+
+            imageAnalysis.setAnalyzer(
+                ContextCompat.getMainExecutor(context)
+            ) { image: ImageProxy ->
+                val buffer = image.planes[0].buffer
+                val data = ByteArray(buffer.remaining())
+                buffer.get(data)
+                // Send frame data to the WebSocket server
+                webSocketClient.sendVideoFrame(data)
+                image.close()
+            }
+
+            DisposableEffect(lifecycleOwner) {
+                controller.bindToLifecycle(lifecycleOwner)
+                onDispose {
+                    webSocketClient.close()
+                    controller.unbind()
+                }
+            }
 
             BottomSheetScaffold(
                 scaffoldState = scaffoldState,
@@ -163,7 +192,6 @@ fun UserMonitorScreen(navController: NavController) {
                             modifier = Modifier.size(70.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                             onClick = {
-                                isRecording = !isRecording
                                 try {
                                     isRecording = !isRecording
                                     if (isRecording) {
