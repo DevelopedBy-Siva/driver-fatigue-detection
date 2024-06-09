@@ -6,3 +6,4 @@ data/labels.cache
 .vscode
 env
 .venv
+result
