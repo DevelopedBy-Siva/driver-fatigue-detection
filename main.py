@@ -1,9 +1,8 @@
-import socket
 import cv2
 import face_recognition
-import numpy as np
 from tensorflow import keras
-from threading import Thread
+
+trained_model = keras.models.load_model('./notebook/drowsiness_model.keras', compile=False)
 
 
 def extract_eye_region_for_prediction(frame):
@@ -15,8 +14,8 @@ def extract_eye_region_for_prediction(frame):
 
     # Get left and right eye coordinates
     try:
-        left_eye_coordinates = facial_landmarks_list[0]["left_eye"]
-        right_eye_coordinates = facial_landmarks_list[0]["right_eye"]
+        left_eye_coordinates = facial_landmarks_list[0]['left_eye']
+        right_eye_coordinates = facial_landmarks_list[0]['right_eye']
     except KeyError:
         return None
 
@@ -35,100 +34,106 @@ def extract_eye_region_for_prediction(frame):
         if x_range > y_range:
             right_bound = round(0.5 * x_range) + x_max
             left_bound = x_min - round(0.5 * x_range)
-            bottom_bound = round(
-                (right_bound - left_bound - y_range) / 2) + y_max
+            bottom_bound = round((right_bound - left_bound - y_range) / 2) + y_max
             top_bound = y_min - round((right_bound - left_bound - y_range) / 2)
         else:
             bottom_bound = round(0.5 * y_range) + y_max
             top_bound = y_min - round(0.5 * y_range)
-            right_bound = round(
-                (bottom_bound - top_bound - x_range) / 2) + x_max
-            left_bound = x_min - \
-                         round((bottom_bound - top_bound - x_range) / 2)
+            right_bound = round((bottom_bound - top_bound - x_range) / 2) + x_max
+            left_bound = x_min - round((bottom_bound - top_bound - x_range) / 2)
 
         # Draw rectangle around the eye
-        cv2.rectangle(
-            frame, (left_bound, top_bound), (right_bound,
-                                             bottom_bound), (255, 0, 0), 2
-        )
+        cv2.rectangle(frame, (left_bound, top_bound), (right_bound, bottom_bound), (255, 0, 0), 2)
 
     # Crop the image according to the determined coordinates
-    cropped_eye_region = frame[
-                         top_bound: bottom_bound + 1, left_bound: right_bound + 1
-                         ]
+    cropped_eye_region = frame[top_bound:bottom_bound + 1, left_bound:right_bound + 1]
+
+    # Convert to grayscale
+    gray_eye_region = cv2.cvtColor(cropped_eye_region, cv2.COLOR_BGR2GRAY)
 
     # Resize the cropped image to 80x80 pixels
-    resized_cropped_eye_region = cv2.resize(cropped_eye_region, (80, 80))
+    resized_cropped_eye_region = cv2.resize(gray_eye_region, (80, 80))
 
     # Reshape the image for model prediction
-    image_for_prediction = resized_cropped_eye_region.reshape(-1, 80, 80, 3)
+    image_for_prediction = resized_cropped_eye_region.reshape(-1, 80, 80, 1)
 
     return image_for_prediction
 
 
-def receive_frame(sock):
-    # Receive frame size
-    frame_size = sock.recv(1024)
-    frame_size = int.from_bytes(frame_size, byteorder='big')
+def initialize_webcam():
+    cap = cv2.VideoCapture(0)
+    w = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    h = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
-    # Receive frame data
-    frame_data = b""
-    while len(frame_data) < frame_size:
-        data = sock.recv(4096)
-        if not data:
-            break
-        frame_data += data
+    if not cap.isOpened():
+        raise IOError('Cannot open webcam')
 
-    # Convert frame data to numpy array
-    frame_bytes = np.frombuffer(frame_data, dtype=np.uint8)
-    frame = cv2.imdecode(frame_bytes, cv2.IMREAD_COLOR)
-
-    return frame
+    return cap, w, h
 
 
-def initialize_server(host, port):
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.bind((host, port))
-    server_socket.listen(1)
-    print("Server listening...")
-    client_socket, client_address = server_socket.accept()
-    print(f"Connection from {client_address} established.")
-    return client_socket
+# Initialize webcam
+webcam, width, height = initialize_webcam()
 
+# Initialize counters
+frame_count = 0
+blink_counter = 0
 
-def monitor_driver(client_socket):
-    trained_model = keras.models.load_model("drowsiness_model.keras")
-    frame_count = 0
-    blink_counter = 0
+# Run a continuous loop while the webcam is active
+while True:
+    # Capture frames from the webcam
+    ret, frame = webcam.read()
 
-    while True:
-        frame = receive_frame(client_socket)
-        eye_image = extract_eye_region_for_prediction(frame)
-        try:
-            eye_image = eye_image / 255.0
-        except:
+    # Use only every other frame to manage speed and memory usage
+    if frame_count == 0:
+        frame_count += 1
+        pass
+    else:
+        frame_count = 0
+        continue
+
+    # Process the frame to get the eye for prediction
+    eye_image = extract_eye_region_for_prediction(frame)
+    try:
+        eye_image = eye_image / 255.0
+    except:
+        continue
+
+    # Get prediction from the trained model
+    prediction = trained_model.predict(eye_image)
+
+    # Display status based on the prediction ("Open Eyes" or "Closed Eyes")
+    if prediction < 0.5:
+        blink_counter = 0
+        status = 'Open'
+
+    else:
+        blink_counter += 1
+        status = 'Closed'
+
+        # If the blink counter exceeds 2, show an alert for drowsiness
+        if blink_counter > 2:
+            # Show alert message on Screen
+            cv2.rectangle(frame, (round(width / 2) - 160, round(height) - 200),
+                          (round(width / 2) + 175, round(height) - 120), (0, 0, 255), -1)
+            cv2.putText(frame, "Blink, Don't Sleep!", (round(width / 2) - 136, round(height) - 146),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_4)
+            cv2.imshow('Drowsiness Detection', frame)
+            k = cv2.waitKey(1)
+            blink_counter = 1
             continue
 
-        prediction = trained_model.predict(eye_image)
+    # Show prediction on Screen
+    cv2.putText(frame, f'{prediction}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2, cv2.LINE_AA)
+    # Show status (Open or Closed on Screen)
+    cv2.putText(frame, 'Status: ' + status, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
-        if prediction < 0.5:
-            print("Awake...")
-            blink_counter = 0
-        else:
-            blink_counter += 1
-            if blink_counter > 2:
-                print("Wakeup...")
-                client_socket.send("DROWSY".encode())
-                blink_counter = 1
-                continue
+    # Display the processed frame
+    cv2.imshow('Drowsiness Detection', frame)
 
-        message = client_socket.recv(1024).decode()
-        if message == "STOP_MONITORING":
-            break
+    # Exit the loop on pressing the 'Esc' key
+    if cv2.waitKey(1) & 0xFF == 27:
+        break
 
-    client_socket.close()
-
-
-if __name__ == "__main__":
-    client_socket = initialize_server("localhost", 50000)
-    Thread(target=monitor_driver, args=(client_socket,)).start()
+# Release the webcam and close all windows
+webcam.release()
+cv2.destroyAllWindows()
