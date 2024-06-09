@@ -1,7 +1,6 @@
 import os
 import shutil
 import threading
-
 import cv2
 import face_recognition
 import numpy as np
@@ -61,11 +60,8 @@ def extract_eye_region_for_prediction(frame):
     # Crop the image based on the coordinates
     cropped_eye_region = frame[top_bound:bottom_bound + 1, left_bound:right_bound + 1]
 
-    # Convert to grayscale
-    gray_eye_region = cv2.cvtColor(cropped_eye_region, cv2.COLOR_BGR2GRAY)
-
     # Resize & Reshape the image
-    resized_cropped_eye_region = cv2.resize(gray_eye_region, (80, 80))
+    resized_cropped_eye_region = cv2.resize(cropped_eye_region, (80, 80))
     image_for_prediction = resized_cropped_eye_region.reshape(-1, 80, 80, 1)
 
     return image_for_prediction
@@ -96,7 +92,7 @@ def create_directory():
 
     # Create the folder
     os.makedirs(output_dir, exist_ok=True)
-    print(f"'Result directory is created...")
+    print(f"Result directory is created...")
 
 
 @socketio.on('connect')
@@ -116,7 +112,7 @@ def handle_frame(data):
         # Convert & decode frame
         arr_1d = np.frombuffer(data, np.uint8)
         frame = cv2.imdecode(arr_1d, cv2.IMREAD_GRAYSCALE)
-        frame = cv2.rotate(frame, cv2.ROTATE_180)
+        frame = cv2.rotate(frame, -90)
 
         if frame is None:
             print("No frame received...")
