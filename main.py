@@ -1,6 +1,7 @@
 import os
 import shutil
 import threading
+import uuid
 from datetime import datetime
 
 import cv2
@@ -20,11 +21,11 @@ trained_model = keras.models.load_model('./drowsiness_model.keras', compile=Fals
 # Output directory for debugging
 output_dir = 'result'
 
-# Store timestamps when the status is 'closed'
-closed_timestamps = []
+# Store session data
+session_data = {}
 
 # Cloud server URL
-cloud_server_url = 'http://10.0.2.2:8080/data'
+cloud_server_url = 'http://localhost:8080/data'
 
 
 def extract_eye_region_for_prediction(frame):
@@ -91,13 +92,13 @@ def process_and_save_frame(frame, prediction, status):
 
         # Store timestamp
         if status == 'Closed':
-            closed_timestamps.append(current_time)
+            session_data['data'].append(current_time)
 
     except Exception as e:
-        print(f"Error processing frame: {e}")
+        print(f"Error saving the frame: {e}")
 
 
-# folder exists delete it, then recreate
+# Folder exists, delete it, then recreate
 def create_directory():
     if os.path.exists(output_dir):
         shutil.rmtree(output_dir)
@@ -109,28 +110,46 @@ def create_directory():
 
 @socketio.on('connect')
 def handle_connect():
-    global closed_timestamps
     print('Client connected...')
-    closed_timestamps = []
     create_directory()
+
+
+@socketio.on('register_client')
+def handle_register_client(email):
+    session_data.clear()
+    session_id = str(uuid.uuid4())
+    session_data.update({
+        'user': email,
+        'journey': session_id,
+        'start_time': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'data': []
+    })
+    print(f'Client registered: {session_data}')
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
-    print('Client disconnected...')
-    if closed_timestamps:
+    if 'user' in session_data:
+        user_data = session_data.copy()
+        session_data.clear()
+
         try:
-            response = requests.post(cloud_server_url, json={'timestamps': closed_timestamps})
+            response = requests.post(cloud_server_url, json=user_data)
             if response.status_code == 200:
-                print('Timestamps successfully sent...')
+                print('Session data successfully sent...')
             else:
-                print(f'Failed to send timestamps...')
+                print(f'Failed to send session data...')
         except Exception as e:
-            print(f"Caught Error sending timestamps: {e}")
+            print(f"Error sending session data: {e}")
+    print('Client disconnected...')
 
 
 @socketio.on('frame')
 def handle_frame(data):
+    if 'user' not in session_data:
+        print("Session not registered.")
+        return
+
     try:
         # Convert & decode frame
         arr_1d = np.frombuffer(data, np.uint8)
@@ -160,7 +179,8 @@ def handle_frame(data):
             print("Eyes are closed...")
 
         # Save the result
-        threading.Thread(target=process_and_save_frame, args=(frame, prediction, status)).start()
+        threading.Thread(target=process_and_save_frame,
+                         args=(frame, prediction, status)).start()
 
     except Exception as e:
         print(f"Error processing: {e}")
