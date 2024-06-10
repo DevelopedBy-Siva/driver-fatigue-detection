@@ -1,9 +1,12 @@
 import os
 import shutil
 import threading
+from datetime import datetime
+
 import cv2
 import face_recognition
 import numpy as np
+import requests
 from flask import Flask
 from flask_socketio import SocketIO
 from tensorflow import keras
@@ -14,8 +17,14 @@ socketio = SocketIO(app)
 # Load the model
 trained_model = keras.models.load_model('./drowsiness_model.keras', compile=False)
 
-# Output directory
+# Output directory for debugging
 output_dir = 'result'
+
+# Store timestamps when the status is 'closed'
+closed_timestamps = []
+
+# Cloud server URL
+cloud_server_url = 'http://10.0.2.2:8080/data'
 
 
 def extract_eye_region_for_prediction(frame):
@@ -69,17 +78,20 @@ def extract_eye_region_for_prediction(frame):
 
 def process_and_save_frame(frame, prediction, status):
     try:
-        # Show prediction on the image
+        # Show prediction & status on the image
         cv2.putText(frame, f'Prediction: {prediction[0][0]:.2f}', (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0),
-                    2,
-                    cv2.LINE_AA)
-        # Show status on the image
+                    2, cv2.LINE_AA)
         cv2.putText(frame, 'Status: ' + status, (10, 70), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
-        # Save the processed frame to the disk
-        output_path = os.path.join(output_dir, f'processed_{np.random.randint(1, 10000)}.jpg')
+        # Save the frame to the disk
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        output_path = os.path.join(output_dir, f'{status}_{current_time}.jpg')
         cv2.imwrite(output_path, frame)
         print(f"Processed frame saved: {output_path}")
+
+        # Store timestamp
+        if status == 'Closed':
+            closed_timestamps.append(current_time)
 
     except Exception as e:
         print(f"Error processing frame: {e}")
@@ -97,13 +109,24 @@ def create_directory():
 
 @socketio.on('connect')
 def handle_connect():
+    global closed_timestamps
     print('Client connected...')
+    closed_timestamps = []
     create_directory()
 
 
 @socketio.on('disconnect')
 def handle_disconnect():
     print('Client disconnected...')
+    if closed_timestamps:
+        try:
+            response = requests.post(cloud_server_url, json={'timestamps': closed_timestamps})
+            if response.status_code == 200:
+                print('Timestamps successfully sent...')
+            else:
+                print(f'Failed to send timestamps...')
+        except Exception as e:
+            print(f"Caught Error sending timestamps: {e}")
 
 
 @socketio.on('frame')
@@ -136,7 +159,7 @@ def handle_frame(data):
             status = 'Closed'
             print("Eyes are closed...")
 
-        # Save the result as a background process
+        # Save the result
         threading.Thread(target=process_and_save_frame, args=(frame, prediction, status)).start()
 
     except Exception as e:

@@ -7,3 +7,4 @@ face_recognition
 websockets
 Flask
 Flask-SocketIO
+requests
